@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+
+<body>
+    <div class="crud">
+        <div class="head">
+            <h2>cruds</h2>
+            <p>product management system</p>
+        </div>
+        <div class="inpute">
+            <input type="text" id="title" placeholder="Title">
+            <div class="price">
+                <input onkeyup="gettotal()" type="number" id="price" placeholder="price">
+                <input onkeyup="gettotal()"  type="number" id="taxes" placeholder="taxes">
+                <input onkeyup="gettotal()"  type="number" id="ads" placeholder="ads">
+                <input onkeyup="gettotal()"  type="number" id="discount" placeholder="discount">
+                <small id="total"></small>
+            </div>
+            <input type="number" id="count" placeholder="count">
+            <input type="text" id="category" placeholder="category">
+            <button id="creat">create</button>
+        </div>
+        <div class="outpute">
+            <input onkeyup="searchdata(this.value)" type="text" class="serch" id="searcharea" placeholder="Search">
+            <div class="searchbtn">
+                <button onclick="getsearchway(this.id)" id="searchtitle">Search By Title</button>
+                <button onclick="getsearchway(this.id)" id="searchcat">Search By category</button>
+            </div>
+            <div id="deleteall">
+
+            </div>
+            <table>
+                <tr>
+                    <th>id</th>
+                    <th>title</th>
+                    <th>price</th>
+                    <th>taxes</th>
+                    <th>ads</th>
+                    <th>discount</th>
+                    <th>total</th>
+                    <th>category</th>
+                    <th>update</th>
+                    <th>delete</th>
+                </tr>
+                <tbody id="tb">
+                   
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    <script >
+        
+//total//
+let title = document.getElementById('title');
+let price = document.getElementById('price');
+let taxes = document.getElementById('taxes');
+let ads = document.getElementById('ads');
+let discount = document.getElementById('discount');
+let total = document.getElementById('total');
+let count = document.getElementById('count');
+let category = document.getElementById('category');
+let creat = document.getElementById('creat');
+let mood = "creat";
+let temp;
+let search = document.getElementById('searcharea');
+function gettotal(){
+    if(price.value != ''){
+        let res = (+price.value + +taxes.value + +ads.value) - +discount.value;
+        total.innerHTML=res;
+        total.style.background = '#040';
+    }
+    else
+    {
+        total.style.background = '#860101';
+        total.innerHTML ='0'
+    }
+}
+//creat //creat an array //onclick on creat collect input data in obj // inpute the obj in the arr 
+// localstorag = arr // when reload //if l.s not empty - l.s = arr 
+//else creat an arrray 
+let arr ;
+ if(localStorage.product != null)
+{
+    arr = JSON.parse(window.localStorage.product);
+}
+else
+{
+   arr = [];
+}
+
+creat.onclick = function(){
+  //  creat.style.background = '#040';
+    let newp = {
+        title:title.value.toLowerCase(),
+        price:price.value,
+        taxes:taxes.value,
+        ads:ads.value,
+        discount:discount.value,
+        total:total.innerHTML,
+        count:count.value,
+        category:category.value.toLowerCase(),
+    }
+    if (title.value != '' && price.value != '' && category.value != '' && count.value < 100 )
+    {
+        if (mood === "creat")
+        {
+            if (newp.count > 1 )
+            {
+                for(let i = 0 ; i < newp.count ; i++)
+                {
+                    arr.push(newp);
+                }
+            }
+            else
+            {
+                arr.push(newp);
+            }
+            clear();
+        }
+        else
+        {
+            arr[temp] = newp;
+            creat.innerHTML = "Create";
+            mood = "creat";
+            count.style.display = "block";
+            clear();
+        }
+    }
+    window.localStorage.setItem('product',    JSON.stringify(arr)   )
+    
+    read();
+}
+
+function read(){
+    gettotal();
+    let table = '';
+    for(let i = 0 ; i < arr.length ; i++)
+    {
+        table += ` 
+                <tr>
+                    <td>${i+1}</td>
+                    <td>${arr[i].title}</td>
+                    <td>${arr[i].price}</td>
+                    <td>${arr[i].taxes}</td>
+                    <td>${arr[i].ads}</td>
+                    <td>${arr[i].discount}</td>
+                    <td>${arr[i].total}</td>
+                    <td>${arr[i].category}</td>
+                    <td><button onclick = "retuendata(${i})" id="update">update</button></td>
+                    <td><button onclick= "deleteitem(${i})" id="delete">delete</button></td>
+                </tr>
+        `
+    }
+    document.getElementById('tb').innerHTML = table;
+    let btndelall = document.getElementById('deleteall');
+    if(arr.length > 0 )
+    {
+        btndelall.innerHTML = `<button onclick = "deleteall()">delete all (${arr.length})</button>`;
+    }
+    else
+    {
+        btndelall.innerHTML = ``;
+    }
+}
+read();
+//clear the inputes //read //make variable //looping on the array // each circle copy row //
+function clear(){
+    title.value ='';
+    price.value = '';
+    taxes.value = '';
+    ads.value = '';
+    discount.value = '';
+    total.innerHTML ='';
+    count.value ='';
+    category.value = '';
+}
+function deleteitem(i)
+{
+   
+     arr.splice(i,1);
+     localStorage.product = JSON.stringify(arr);
+     read();
+}
+//delteall // make the place by html//if arr is have //buttn // else no thing //
+function deleteall()
+{
+    console.log(4);
+    localStorage.clear();
+    arr.splice(0);
+    read();
+} 
+function retuendata(i)
+{
+    
+    title.value = arr[i].title;
+    price.value = arr[i].price;
+    taxes.value = arr[i].taxes;
+    ads.value = arr[i].ads;
+    discount.value = arr[i].discount;
+    count.style.display = 'none';
+    category.value = arr[i].category;
+    gettotal();
+    creat.innerHTML = "Update"
+    temp = i;
+    mood = "update";
+    scroll({
+        top :0,
+        behavior:"smooth"
+    })
+}
+//count // if new.count>1 for(count) puhsh new item else push 
+    let searchway = 'title';
+    function getsearchway(id)
+    {
+        //console.log(id);
+        if (id == 'searchtitle')
+        {
+            searchway = 'title';
+         
+        }
+        else
+        {
+            searchway = 'Category';
+        
+        }
+        search.placeholder = "search by  " + searchway ;
+        search.focus();
+        console.log(searchway);
+        search.value = '';
+        read();
+    }
+function searchdata(value)
+{
+    let table = '';
+    for(let i = 0 ; i < arr.length ; i++)
+    {
+     if (searchway == 'title')
+     {
+         if (arr[i].title.includes(value.toLowerCase()))
+         {
+            table += ` 
+                <tr>
+                    <td>${i+0}</td>
+                    <td>${arr[i].title}</td>
+                    <td>${arr[i].price}</td>
+                    <td>${arr[i].taxes}</td>
+                    <td>${arr[i].ads}</td>
+                    <td>${arr[i].discount}</td>
+                    <td>${arr[i].total}</td>
+                    <td>${arr[i].category}</td>
+                    <td><button onclick = "retuendata(${i})" id="update">update</button></td>
+                    <td><button onclick= "deleteitem(${i})" id="delete">delete</button></td>
+                </tr>
+        `
+         }
+         document.getElementById('tb').innerHTML = table;
+
+     }   
+     else
+     {
+        if (arr[i].category.includes(value.toLowerCase()))
+         {
+            table += ` 
+                <tr>
+                    <td>${i+1}</td>
+                    <td>${arr[i].title}</td>
+                    <td>${arr[i].price}</td>
+                    <td>${arr[i].taxes}</td>
+                    <td>${arr[i].ads}</td>
+                    <td>${arr[i].discount}</td>
+                    <td>${arr[i].total}</td>
+                    <td>${arr[i].category}</td>
+                    <td><button onclick = "retuendata(${i})" id="update">update</button></td>
+                    <td><button onclick= "deleteitem(${i})" id="delete">delete</button></td>
+                </tr>
+        `
+         }
+         document.getElementById('tb').innerHTML = table;
+     }
+    }
+    document.getElementById('tb').innerHTML = table;
+   
+}
+    </script>
+</body>
+
+</html>
